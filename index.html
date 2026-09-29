@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0b0d12">
+  <meta name="description" content="MiniTools — a fast, clean collection of everyday browser tools.">
+  <title>MiniTools — Simple tools, one clean workspace</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" defer></script>
+  <style>
+    :root{
+      --bg:#0b0d12; --panel:#10131a; --panel-2:#151923; --soft:#1b202c; --line:#262c3a;
+      --text:#f4f6fb; --muted:#99a2b3; --accent:#8aa5ff; --accent-2:#6f8fff; --danger:#ff7a8a; --ok:#7ed8aa;
+      --shadow:0 16px 50px rgba(0,0,0,.28); --radius:18px;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;background:radial-gradient(circle at 78% -10%,rgba(91,120,255,.10),transparent 32%),var(--bg);color:var(--text);font:500 15px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh}
+    button,input,textarea,select{font:inherit}
+    button{cursor:pointer}
+    .app{min-height:100vh;display:grid;grid-template-columns:250px minmax(0,1fr)}
+    .sidebar{position:sticky;top:0;height:100vh;padding:22px 16px;border-right:1px solid var(--line);background:rgba(12,15,21,.78);backdrop-filter:blur(18px);z-index:10}
+    .brand{display:flex;align-items:center;gap:11px;padding:6px 10px 18px}
+    .brand-mark{width:34px;height:34px;border-radius:11px;background:linear-gradient(145deg,#dce3ff,#6f8fff);box-shadow:0 8px 24px rgba(111,143,255,.22);position:relative;overflow:hidden}
+    .brand-mark:after{content:"";position:absolute;width:14px;height:14px;border:3px solid #111522;border-radius:50%;left:8px;top:8px}
+    .brand strong{font-size:16px;letter-spacing:.2px}
+    .brand span{display:block;color:var(--muted);font-size:12px;font-weight:500}
+    .search{position:relative;margin:0 2px 16px}
+    .search input{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:12px;color:var(--text);padding:11px 12px 11px 36px;outline:none}
+    .search input:focus{border-color:#4c5f99;box-shadow:0 0 0 3px rgba(111,143,255,.11)}
+    .search svg{position:absolute;left:12px;top:12px;width:16px;color:var(--muted)}
+    nav{display:grid;gap:4px;overflow:auto;max-height:calc(100vh - 126px);padding-right:3px}
+    .nav-item{display:flex;align-items:center;gap:10px;border:0;background:transparent;color:var(--muted);padding:10px 11px;border-radius:11px;text-align:left;transition:.2s ease}
+    .nav-item:hover{background:#141924;color:var(--text)}
+    .nav-item.active{background:linear-gradient(90deg,rgba(111,143,255,.16),rgba(111,143,255,.05));color:var(--text);box-shadow:inset 1px 0 0 var(--accent)}
+    .nav-item svg{width:17px;opacity:.82;flex:0 0 auto}
+    .main{min-width:0;padding:30px clamp(18px,4vw,56px) 64px}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;max-width:1320px;margin:0 auto 30px}
+    .eyebrow{color:#aab4c8;font-size:12px;letter-spacing:.14em;text-transform:uppercase}
+    h1{font-size:clamp(30px,4vw,48px);line-height:1.03;letter-spacing:-.04em;margin:7px 0 10px}
+    .subtitle{margin:0;color:var(--muted);max-width:680px;font-size:15px}
+    .status{border:1px solid var(--line);background:rgba(17,21,29,.72);padding:9px 12px;border-radius:999px;color:#bac2d0;display:flex;align-items:center;gap:8px;white-space:nowrap}
+    .dot{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 4px rgba(126,216,170,.1)}
+    .shell{max-width:1320px;margin:0 auto}
+    .workspace{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:20px;align-items:start}
+    .tool-panel{background:linear-gradient(180deg,rgba(18,22,30,.96),rgba(13,16,22,.96));border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);overflow:hidden}
+    .tool-head{padding:22px 22px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:16px;align-items:start}
+    .tool-head h2{margin:0;font-size:22px;letter-spacing:-.02em}
+    .tool-head p{margin:4px 0 0;color:var(--muted);font-size:13px}
+    .head-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+    .content{padding:22px}
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+    .field{display:grid;gap:7px}
+    .field label{font-size:12px;color:#aeb6c4}
+    input[type=text],input[type=number],input[type=date],input[type=datetime-local],select,textarea{width:100%;background:#0d1117;border:1px solid #262d3a;color:var(--text);border-radius:13px;padding:12px 13px;outline:none;transition:.18s ease}
+    textarea{min-height:230px;resize:vertical}
+    input:focus,select:focus,textarea:focus{border-color:#5368a9;box-shadow:0 0 0 3px rgba(111,143,255,.10)}
+    .mono{font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace;font-size:13px}
+    .btn{border:1px solid var(--line);background:#171c26;color:var(--text);padding:10px 13px;border-radius:11px;transition:transform .15s ease,background .15s ease,border-color .15s ease}
+    .btn:hover{background:#1d2430;border-color:#374155}
+    .btn:active{transform:translateY(1px)}
+    .btn.primary{background:var(--accent);border-color:var(--accent);color:#0a0d14;font-weight:700}
+    .btn.primary:hover{background:#9fb3ff}
+    .btn.ghost{background:transparent}
+    .btn.danger{color:#ffb1ba}
+    .row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .output{background:#0b0f15;border:1px dashed #303748;border-radius:13px;padding:12px;min-height:54px;word-break:break-word}
+    .stack{display:grid;gap:12px}
+    .toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 10px}
+    .muted{color:var(--muted)}
+    .notice{padding:12px 14px;border-radius:12px;background:#111720;border:1px solid var(--line);color:#bac3d1;font-size:13px}
+    .success{color:var(--ok)} .error{color:var(--danger)}
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+    .stat{background:#0e1219;border:1px solid var(--line);border-radius:14px;padding:13px}
+    .stat b{display:block;font-size:16px;margin-top:2px}
+    .sidecard{background:rgba(16,19,26,.88);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 10px 35px rgba(0,0,0,.18)}
+    .sidecard h3{font-size:13px;margin:0 0 13px;color:#d7dce7}
+    .quick{display:grid;gap:8px}
+    .quick button{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 11px;border:1px solid var(--line);background:#0e1219;color:#c8cfdb;border-radius:12px;text-align:left}
+    .quick button:hover{background:#161b25;color:var(--text)}
+    .kbd{font-family:monospace;font-size:11px;color:#7f899a}
+    .tool{display:none}.tool.active{display:block;animation:fadeIn .22s ease}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+    .drop{border:1px dashed #384052;background:#0d1117;border-radius:16px;padding:30px;text-align:center;transition:.18s ease}
+    .drop.drag{border-color:var(--accent);background:#121827}
+    .drop strong{display:block;margin-bottom:4px}
+    .drop small{color:var(--muted)}
+    .range{width:100%}
+    .color-preview{height:120px;border-radius:16px;border:1px solid var(--line);background:#ffffff;display:flex;align-items:flex-end;justify-content:space-between;padding:12px;color:#111}
+    .color-preview .chip{padding:6px 9px;background:rgba(255,255,255,.75);backdrop-filter:blur(10px);border-radius:9px;font:700 12px monospace}
+    .match{padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#0d1117}
+    .match mark{background:rgba(137,165,255,.25);color:#fff;border-radius:3px;padding:1px 2px}
+    .qr-wrap{display:grid;place-items:center;min-height:300px;background:#0d1117;border:1px solid var(--line);border-radius:16px;padding:20px}
+    .qr-wrap img,.qr-wrap canvas{max-width:100%;height:auto;background:#fff;padding:14px;border-radius:10px}
+    .hidden{display:none!important}
+    .empty{padding:34px;text-align:center;color:#778093}
+    .footer{max-width:1320px;margin:24px auto 0;color:#626d7f;font-size:12px;text-align:center}
+    @media (max-width:1100px){.workspace{grid-template-columns:1fr}.sidecard{display:none}}
+    @media (max-width:820px){.app{grid-template-columns:1fr}.sidebar{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:12px}.brand{padding:6px 8px 11px}.search{margin-bottom:9px}nav{display:flex;gap:5px;overflow-x:auto;max-height:none;padding-bottom:2px}.nav-item{flex:0 0 auto}.nav-item span{display:none}.main{padding:22px 14px 42px}.topbar{margin-bottom:22px}.status{display:none}.grid-2,.grid-3{grid-template-columns:1fr}.tool-head{padding:18px}.content{padding:16px}textarea{min-height:190px}}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true"></div>
+        <div><strong>MiniTools</strong><span>Fast browser utilities</span></div>
+      </div>
+      <div class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="toolSearch" type="text" placeholder="Search tools…" autocomplete="off">
+      </div>
+      <nav id="toolNav">
+        <button class="nav-item active" data-tool="json"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 4c-2 0-3 1.2-3 3v2c0 1.7-1 3-3 3 2 0 3 1.3 3 3v2c0 1.8 1 3 3 3"/><path d="M16 4c2 0 3 1.2 3 3v2c0 1.7 1 3 3 3-2 0-3 1.3-3 3v2c0 1.8-1 3-3 3"/></svg><span>JSON Formatter</span></button>
+        <button class="nav-item" data-tool="base64"><span>◫</span><span>Base64</span></button>
+        <button class="nav-item" data-tool="uuid"><span>▦</span><span>UUID Generator</span></button>
+        <button class="nav-item" data-tool="hash"><span>#</span><span>Hash Generator</span></button>
+        <button class="nav-item" data-tool="qr"><span>▧</span><span>QR Generator</span></button>
+        <button class="nav-item" data-tool="timestamp"><span>◷</span><span>Timestamp Converter</span></button>
+        <button class="nav-item" data-tool="regex"><span>.*</span><span>Regex Tester</span></button>
+        <button class="nav-item" data-tool="color"><span>◉</span><span>Color Converter</span></button>
+        <button class="nav-item" data-tool="compressor"><span>▱</span><span>Image Compressor</span></button>
+        <button class="nav-item" data-tool="cleaner"><span>≡</span><span>Text Cleaner</span></button>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div>
+          <div class="eyebrow">One clean workspace</div>
+          <h1 id="pageTitle">JSON Formatter</h1>
+          <p class="subtitle" id="pageSubtitle">Format, validate and minify JSON without leaving your browser.</p>
+        </div>
+        <div class="status"><span class="dot"></span>Ready</div>
+      </div>
+
+      <div class="shell">
+        <div class="workspace">
+          <section class="tool-panel">
+            <div id="tools">
+              <article class="tool active" data-tool-panel="json">
+                <div class="tool-head"><div><h2>JSON Formatter</h2><p>Clean up JSON, validate it, or make it compact.</p></div><div class="head-actions"><button class="btn ghost" id="jsonSample">Sample</button><button class="btn" id="jsonClear">Clear</button></div></div>
+                <div class="content stack">
+                  <div class="grid-2">
+                    <div class="field"><label for="jsonInput">Input</label><textarea id="jsonInput" class="mono" spellcheck="false" placeholder='{"name":"MiniTools","fast":true}'></textarea></div>
+                    <div class="field"><label for="jsonOutput">Output</label><textarea id="jsonOutput" class="mono" spellcheck="false" readonly placeholder="Formatted JSON appears here"></textarea></div>
+                  </div>
+                  <div class="row"><button class="btn primary" id="jsonFormat">Format</button><button class="btn" id="jsonMinify">Minify</button><button class="btn" id="jsonCopy">Copy output</button><span id="jsonStatus" class="muted"></span></div>
+                </div>
+              </article>
+
+              <article class="tool" data-tool-panel="base64">
+                <div class="tool-head"><div><h2>Base64</h2><p>Encode or decode UTF-8 text safely.</p></div><div class="head-actions"><button class="btn" id="b64Swap">Swap</button><button class="btn" id="b64Clear">Clear</button></div></div>
+                <div class="content stack">
+                  <div class="field"><label for="b64Input">Input</label><textarea id="b64Input" class="mono" spellcheck="false" placeholder="Type text or Base64 here…"></textarea></div>
+                  <div class="row"><button class="btn primary" id="b64Encode">Encode</button><button class="btn" id="b64Decode">Decode</button></div>
+                  <div class="field"><label for="b64Output">Output</label><textarea id="b64Output" class="mono" spellcheck="false" readonly></textarea></div>
+                  <button class="btn" id="b64Copy">Copy output</button>
+                  <div id="b64Status" class="muted"></div>
+                </div>
+              </article>
+
+              <article class="tool" data-tool-panel="uuid">
+                <div class="tool-head"><div><h2>UUID Generator</h2><p>Generate cryptographically random UUID v4 values.</p></div></div>
+                <div class="content stack">
+                  <div class="grid-2"><div class="field"><label for="uuidCount">How many?</label><input id="uuidCount" type="number" min="1" max="50" value="5"></div><div class="field"><label>Format</label><div class="notice">UUID v4 · lowercase · standard hyphens</div></div></div>
+                  <div class="row"><button class="btn primary" id="uuidGenerate">Generate</button><button class="btn" id="uuidCopy">Copy all</button></div>
+                  <div id="uuidOutput" class="stack"></div>
+                </div>
+              </article>
+
+              <article class="tool" data-tool-panel="hash">
+                <div class="tool-head"><div><h2>Hash Generator</h2><p>Create SHA hashes directly in your browser.</p></div></div>
+                <div class="content stack">
+                  <div class="grid-2"><div class="field"><label for="hashAlgo">Algorithm</label><select id="hashAlgo"><option>SHA-256</option><option>SHA-1</option><option>SHA-384</option><option>SHA-512</option></select></div><div class="field"><label for="hashInput">Text</label><input id="hashInput" type="text" placeholder="Hash this text…"></div></div>
+                  <div class="row"><button class="btn primary" id="hashGenerate">Generate hash</button><button class="btn" id="hashCopy">Copy</button></div>
+                  <div class="output mono" id="hashOutput">—</div><div id="hashStatus" class="muted"></div>
+                </div>
+              </article>
+
+              <article class="tool" data-tool-panel="qr">
+                <div class="tool-head"><div><h2>QR Generator</h2><p>Create a QR code for text, links, contact data, or anything else.</p></div></div>
+                <div class="content grid-2">
+                  <div class="stack"><div class="field"><label for="qrText">Content</label><textarea id="qrText" placeholder="https://example.com"></textarea></div><div class="row"><button class="btn primary" id="qrGenerate">Generate QR</button><button class="btn" id="qrDownload">Download PNG</button></div><div id="qrStatus" class="muted"></div></div>
+                  <div class="qr-wrap" id="qrOutput"><div class="empty">Your QR code will appear here.</div></div>
+                </div>
+              </article>
+
+              <article class="tool" data-tool-panel="timestamp">
+                <div class="tool-head"><div><h2>Timestamp Converter</h2><p>Convert Unix timestamps and dates in both directions.</p></div></div>
+                <div class="content stack">
+                  <div class="grid-2"><div class="field"><label for="tsInput">Unix timestamp</label><input id="tsInput" class="mono" type="text" placeholder="e.g. 1760000000"></div><div class="field"><label for="tsDate">Date & time</label><input id="tsDate" type="datetime-local"></div></div>
+                  <div class="row"><button class="btn primary" id="tsFromUnix">From timestamp</button><button class="btn" id="tsFromDate">From date</button><button class="btn" id="tsNow">Use current time</button></div>
+                  <div class="stats"><div class="stat"><span class="muted">Seconds</span><b id="tsSeconds">—</b></div><div class="stat"><span class="muted">Milliseconds</span><b id="tsMillis">—</b></div><div class="stat"><span class="muted">Local</span><b id="tsLocal">—</b></div></div>
+                  <div class="output mono" id="tsUtc">UTC: —</div><div id="tsStatus" class="muted"></div>
+                </div>
+              </article>
+
+              <article class="tool" data-tool-panel="regex">
+                <div class="tool-head"><div><h2>Regex Tester</h2><p>Test patterns, inspect matches, and preview replacements.</p></div></div>
+                <div class="content stack">
+                  <div class="grid-2"><div class="field"><label for="regexPattern">Pattern</label><input id="regexPattern" class="mono" type="text" value="\b[a-z]+\b"></div><div class="field"><label for="regexFlags">Flags</label><input id="regexFlags" class="mono" type="text" value="gi"></div></div>
+                  <div class="field"><label for="regexInput">Text</label><textarea id="regexInput" class="mono" placeholder="Enter text to test…">MiniTools makes small tasks simple. Small tasks, fast results.</textarea></div>
+                  <div class="grid-2"><div class="field"><label for="regexReplace">Replace with</label><input id="regexReplace" class="mono" type="text" placeholder="Optional replacement"></div><div class="field"><label>Result</label><div class="output mono" id="regexReplacement">—</div></div></div>
+                  <div id="regexSummary" class="muted"></div><div id="regexMatches" class="stack"></div>
+                </div>
+              </article>
+
+              <article class="tool" data-tool-panel="color">
+                <div class="tool-head"><div><h2>Color Converter</h2><p>Convert HEX, RGB, and HSL values with a live preview.</p></div></div>
+                <div class="content stack">
+                  <div class="grid-3"><div class="field"><label for="hexInput">HEX</label><input id="hexInput" class="mono" type="text" value="#6F8FFF"></div><div class="field"><label for="rgbInput">RGB</label><input id="rgbInput" class="mono" type="text" value="111, 143, 255"></div><div class="field"><label for="hslInput">HSL</label><input id="hslInput" class="mono" type="text" value="227, 100%, 72%"></div></div>
+                  <div class="color-preview" id="colorPreview"><div>Preview</div><div class="chip" id="colorChip">#6F8FFF</div></div>
+                  <div class="row"><button class="btn primary" id="colorApply">Apply color</button><button class="btn" id="colorCopyHex">Copy HEX</button><button class="btn" id="colorCopyRgb">Copy RGB</button></div>
+                  <div id="colorStatus" class="muted"></div>
+                </div>
+              </article>
+
+              <article class="tool" data-tool-panel="compressor">
+                <div class="tool-head"><div><h2>Image Compressor</h2><p>Compress common images locally before downloading them.</p></div></div>
+                <div class="content stack">
+                  <div id="dropZone" class="drop"><strong>Drop an image here</strong><small>or choose a file from your device</small><div style="margin-top:14px"><label class="btn primary" for="imageFile">Choose image</label><input id="imageFile" class="hidden" type="file" accept="image/jpeg,image/png,image/webp,image/gif"></div></div>
+                  <div class="grid-2"><div class="field"><label for="qualityRange">Quality <span id="qualityValue">80%</span></label><input class="range" id="qualityRange" type="range" min="10" max="100" value="80"></div><div class="field"><label for="maxWidth">Max width (px)</label><input id="maxWidth" type="number" min="100" max="8000" value="1920"></div></div>
+                  <div class="row"><button class="btn primary" id="compressBtn" disabled>Compress image</button><button class="btn" id="compressDownload" disabled>Download result</button></div>
+                  <div class="grid-2"><div class="field"><label>Original</label><div class="output" id="imageOriginal">—</div></div><div class="field"><label>Compressed</label><div class="output" id="imageCompressed">—</div></div></div>
+                  <div id="compressStatus" class="muted"></div><div id="imagePreview" class="qr-wrap hidden"></div>
+                </div>
+              </article>
+
+              <article class="tool" data-tool-panel="cleaner">
+                <div class="tool-head"><div><h2>Text Cleaner</h2><p>Normalize whitespace, remove empty lines, and tidy copied text.</p></div></div>
+                <div class="content stack">
+                  <div class="grid-2"><div class="field"><label for="cleanInput">Input</label><textarea id="cleanInput" placeholder="Paste messy text here…"></textarea></div><div class="field"><label for="cleanOutput">Clean text</label><textarea id="cleanOutput" readonly></textarea></div></div>
+                  <div class="row"><button class="btn primary" id="cleanRun">Clean text</button><button class="btn" id="cleanTrim">Trim lines</button><button class="btn" id="cleanSpaces">Collapse spaces</button><button class="btn" id="cleanEmpty">Remove empty lines</button><button class="btn" id="cleanCopy">Copy output</button></div>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <aside class="sidecard">
+            <h3>Quick access</h3>
+            <div class="quick">
+              <button data-jump="json">Format JSON <span class="kbd">01</span></button>
+              <button data-jump="base64">Base64 <span class="kbd">02</span></button>
+              <button data-jump="hash">Hash <span class="kbd">03</span></button>
+              <button data-jump="timestamp">Timestamp <span class="kbd">04</span></button>
+              <button data-jump="cleaner">Text cleaner <span class="kbd">05</span></button>
+            </div>
+            <div class="notice" style="margin-top:16px">MiniTools runs directly in your browser for the core tools. No account is required.</div>
+          </aside>
+        </div>
+        <div class="footer">MiniTools · Built for quick everyday tasks · Works on desktop and mobile</div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const toolMeta = {
+      json:['JSON Formatter','Format, validate and minify JSON without leaving your browser.'],
+      base64:['Base64','Encode or decode UTF-8 text safely.'],
+      uuid:['UUID Generator','Generate cryptographically random UUID v4 values.'],
+      hash:['Hash Generator','Create SHA hashes directly in your browser.'],
+      qr:['QR Generator','Create a QR code for text, links, contact data, or anything else.'],
+      timestamp:['Timestamp Converter','Convert Unix timestamps and dates in both directions.'],
+      regex:['Regex Tester','Test patterns, inspect matches, and preview replacements.'],
+      color:['Color Converter','Convert HEX, RGB, and HSL values with a live preview.'],
+      compressor:['Image Compressor','Compress common images locally before downloading them.'],
+      cleaner:['Text Cleaner','Normalize whitespace, remove empty lines, and tidy copied text.']
+    };
+    const $ = id => document.getElementById(id);
+    const setText = (id, value) => $(id).textContent = value;
+    const copyText = async value => { try { await navigator.clipboard.writeText(value); return true; } catch { const ta=document.createElement('textarea'); ta.value=value; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); return true; } };
+
+    function activateTool(name){
+      document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.tool===name));
+      document.querySelectorAll('.tool').forEach(p=>p.classList.toggle('active',p.dataset.toolPanel===name));
+      $('pageTitle').textContent=toolMeta[name][0]; $('pageSubtitle').textContent=toolMeta[name][1];
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
+    document.querySelectorAll('.nav-item,[data-jump]').forEach(btn=>btn.addEventListener('click',()=>activateTool(btn.dataset.tool||btn.dataset.jump)));
+    $('toolSearch').addEventListener('input',e=>{
+      const q=e.target.value.toLowerCase().trim();
+      document.querySelectorAll('.nav-item').forEach(btn=>btn.classList.toggle('hidden',q && !btn.textContent.toLowerCase().includes(q)));
+    });
+
+    $('jsonSample').onclick=()=>{$('jsonInput').value=JSON.stringify({name:'MiniTools',version:'1.0',tools:['JSON','Base64','UUID','Hash'],fast:true},null,2); $('jsonFormat').click()};
+    $('jsonClear').onclick=()=>{$('jsonInput').value='';$('jsonOutput').value='';setText('jsonStatus','')};
+    function jsonRun(compact){try{const obj=JSON.parse($('jsonInput').value);$('jsonOutput').value=JSON.stringify(obj,null,compact?0:2);setText('jsonStatus',compact?'Valid JSON · minified':'Valid JSON · formatted');$('jsonStatus').className='success'}catch(e){setText('jsonStatus','Invalid JSON: '+e.message);$('jsonStatus').className='error'}}
+    $('jsonFormat').onclick=()=>jsonRun(false);$('jsonMinify').onclick=()=>jsonRun(true);$('jsonCopy').onclick=async()=>{await copyText($('jsonOutput').value);setText('jsonStatus','Copied')};
+
+    function utf8ToB64(str){const bytes=new TextEncoder().encode(str);let bin='';bytes.forEach(b=>bin+=String.fromCharCode(b));return btoa(bin)}
+    function b64ToUtf8(b64){const bin=atob(b64.replace(/\s+/g,''));const bytes=Uint8Array.from(bin,c=>c.charCodeAt(0));return new TextDecoder().decode(bytes)}
+    $('b64Encode').onclick=()=>{try{$('b64Output').value=utf8ToB64($('b64Input').value);setText('b64Status','Encoded successfully');$('b64Status').className='success'}catch(e){setText('b64Status','Could not encode input');$('b64Status').className='error'}};
+    $('b64Decode').onclick=()=>{try{$('b64Output').value=b64ToUtf8($('b64Input').value);setText('b64Status','Decoded successfully');$('b64Status').className='success'}catch(e){setText('b64Status','Invalid Base64 input');$('b64Status').className='error'}};
+    $('b64Swap').onclick=()=>{const a=$('b64Input').value;$('b64Input').value=$('b64Output').value;$('b64Output').value=a};$('b64Clear').onclick=()=>{$('b64Input').value='';$('b64Output').value='';setText('b64Status','')};$('b64Copy').onclick=async()=>{await copyText($('b64Output').value);setText('b64Status','Copied')};
+
+    function uuidv4(){const a=new Uint8Array(16);crypto.getRandomValues(a);a[6]=(a[6]&0x0f)|0x40;a[8]=(a[8]&0x3f)|0x80;const h=[...a].map(x=>x.toString(16).padStart(2,'0')).join('');return `${h.slice(0,8)}-${h.slice(8,12)}-${h.slice(12,16)}-${h.slice(16,20)}-${h.slice(20)}`}
+    function renderUuids(){const n=Math.max(1,Math.min(50,Number($('uuidCount').value)||1));const values=Array.from({length:n},uuidv4);$('uuidOutput').innerHTML=values.map(v=>`<div class="output mono">${v}</div>`).join('');return values}
+    let uuidValues=[];$('uuidGenerate').onclick=()=>{uuidValues=renderUuids()};$('uuidCopy').onclick=async()=>{if(!uuidValues.length) uuidValues=renderUuids();await copyText(uuidValues.join('\n'))};uuidValues=renderUuids();
+
+    $('hashGenerate').onclick=async()=>{const value=$('hashInput').value;try{const bytes=new TextEncoder().encode(value);const buf=await crypto.subtle.digest($('hashAlgo').value,bytes);const hex=[...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');setText('hashOutput',hex);setText('hashStatus','Generated locally');$('hashStatus').className='success'}catch(e){setText('hashStatus','Hash generation is not available in this browser');$('hashStatus').className='error'}};$('hashCopy').onclick=async()=>{await copyText($('hashOutput').textContent);setText('hashStatus','Copied')};
+
+    function drawQr(){const text=$('qrText').value.trim();if(!text){setText('qrStatus','Enter some content first');$('qrStatus').className='error';return} if(typeof qrcode==='undefined'){setText('qrStatus','QR engine is still loading. Try again in a moment.');$('qrStatus').className='error';return}try{const qr=qrcode(0,'M');qr.addData(text);qr.make();const data=qr.createDataURL(8,14);$('qrOutput').innerHTML=`<img id="qrImage" src="${data}" alt="Generated QR code">`;setText('qrStatus','QR code ready');$('qrStatus').className='success'}catch(e){setText('qrStatus','This content is too large for a QR code');$('qrStatus').className='error'}}
+    $('qrGenerate').onclick=drawQr;$('qrDownload').onclick=()=>{const img=$('qrImage');if(!img)return;const a=document.createElement('a');a.href=img.src;a.download='minitools-qr.png';a.click()};
+
+    function updateTs(ms){const d=new Date(ms);if(Number.isNaN(d.getTime())){setText('tsStatus','Invalid date or timestamp');$('tsStatus').className='error';return}setText('tsSeconds',Math.floor(ms/1000));setText('tsMillis',ms);setText('tsLocal',d.toLocaleString());setText('tsUtc','UTC: '+d.toISOString());setText('tsStatus','Converted successfully');$('tsStatus').className='success'}
+    $('tsFromUnix').onclick=()=>{const raw=$('tsInput').value.trim();if(!raw){setText('tsStatus','Enter a Unix timestamp');return}const n=Number(raw);if(!Number.isFinite(n)){setText('tsStatus','Invalid timestamp');$('tsStatus').className='error';return}updateTs(Math.abs(n)<1e11?n*1000:n)};
+    $('tsFromDate').onclick=()=>{const v=$('tsDate').value;if(!v){setText('tsStatus','Choose a date and time');return}updateTs(new Date(v).getTime())};
+    $('tsNow').onclick=()=>{const d=new Date();$('tsInput').value=Math.floor(d.getTime()/1000);$('tsDate').value=new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16);updateTs(d.getTime())};
+
+    function regexRun(){const pattern=$('regexPattern').value, flags=$('regexFlags').value, text=$('regexInput').value, replacement=$('regexReplace').value;try{const re=new RegExp(pattern,flags);const matches=[];if(re.global){for(const m of text.matchAll(re)){matches.push({value:m[0],index:m.index});if(matches.length>=500)break}}else{const m=re.exec(text);if(m)matches.push({value:m[0],index:m.index})}setText('regexSummary',`${matches.length} match${matches.length===1?'':'es'}`);$('regexMatches').innerHTML=matches.length?matches.map((m,i)=>`<div class="match"><b>${i+1}.</b> <span class="mono">${escapeHtml(m.value)}</span> <span class="muted">at ${m.index}</span></div>`).join(''):'<div class="empty">No matches.</div>';if(flags.includes('g')) $('regexReplacement').textContent=text.replace(re,replacement); else $('regexReplacement').textContent=text.replace(re,replacement)}catch(e){setText('regexSummary','Invalid regular expression: '+e.message);$('regexSummary').className='error';$('regexMatches').innerHTML='';$('regexReplacement').textContent='—'}}
+    function escapeHtml(s){return s.replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\\':'\\\\','"':'&quot;'}[c]||c))}
+    ['regexPattern','regexFlags','regexInput','regexReplace'].forEach(id=>$(id).addEventListener('input',regexRun));regexRun();
+
+    function parseHex(hex){let h=hex.trim().replace(/^#/,'');if(h.length===3)h=h.split('').map(c=>c+c).join('');if(!/^[0-9a-f]{6}$/i.test(h))return null;return {r:parseInt(h.slice(0,2),16),g:parseInt(h.slice(2,4),16),b:parseInt(h.slice(4,6),16)}}
+    function rgbToHsl(r,g,b){r/=255;g/=255;b/=255;const max=Math.max(r,g,b),min=Math.min(r,g,b),d=max-min;let h=0,s=0,l=(max+min)/2;if(d){s=l>.5?d/(2-max-min):d/(max+min);switch(max){case r:h=(g-b)/d+(g<b?6:0);break;case g:h=(b-r)/d+2;break;default:h=(r-g)/d+4}h/=6}return [Math.round(h*360),Math.round(s*100),Math.round(l*100)]}
+    function hslToRgb(h,s,l){h/=360;s/=100;l/=100;const hue2rgb=(p,q,t)=>{if(t<0)t+=1;if(t>1)t-=1;if(t<1/6)return p+(q-p)*6*t;if(t<1/2)return q;if(t<2/3)return p+(q-p)*(2/3-t)*6;return p};if(s===0)return [l*255,l*255,l*255];const q=l<.5?l*(1+s):l+s-l*s,p=2*l-q;return [Math.round(hue2rgb(p,q,h+1/3)*255),Math.round(hue2rgb(p,q,h)*255),Math.round(hue2rgb(p,q,h-1/3)*255)]}
+    function applyColor(){let rgb=null;const hex=parseHex($('hexInput').value);if(hex)rgb=hex;else{const m=$('rgbInput').value.match(/\d+(?:\.\d+)?/g);if(m&&m.length>=3){rgb={r:+m[0],g:+m[1],b:+m[2]}}}if(!rgb){setText('colorStatus','Enter a valid HEX or RGB value');$('colorStatus').className='error';return}rgb.r=Math.max(0,Math.min(255,rgb.r));rgb.g=Math.max(0,Math.min(255,rgb.g));rgb.b=Math.max(0,Math.min(255,rgb.b));const hexv='#'+[rgb.r,rgb.g,rgb.b].map(v=>v.toString(16).padStart(2,'0')).join('').toUpperCase();const hsl=rgbToHsl(rgb.r,rgb.g,rgb.b);$('hexInput').value=hexv;$('rgbInput').value=`${rgb.r}, ${rgb.g}, ${rgb.b}`;$('hslInput').value=`${hsl[0]}, ${hsl[1]}%, ${hsl[2]}%`;$('colorPreview').style.background=hexv;$('colorChip').textContent=hexv;setText('colorStatus','Color converted');$('colorStatus').className='success'}
+    $('colorApply').onclick=applyColor;$('colorCopyHex').onclick=async()=>copyText($('hexInput').value);$('colorCopyRgb').onclick=async()=>copyText($('rgbInput').value);applyColor();
+
+    let sourceFile=null, compressedBlob=null;
+    function handleFile(file){if(!file||!file.type.startsWith('image/')){setText('compressStatus','Please choose an image file');$('compressStatus').className='error';return}sourceFile=file;compressedBlob=null;$('compressBtn').disabled=false;$('compressDownload').disabled=true;setText('imageOriginal',`${file.name} · ${formatBytes(file.size)}`);setText('imageCompressed','—');setText('compressStatus','Image loaded');$('compressStatus').className='success'}
+    function formatBytes(n){if(n<1024)return n+' B';const u=['KB','MB','GB'];let i=-1;do{n/=1024;i++}while(n>=1024&&i<u.length-1);return n.toFixed(n<10?1:0)+' '+u[i]}
+    $('imageFile').addEventListener('change',e=>handleFile(e.target.files[0]));['dragenter','dragover'].forEach(t=>$('dropZone').addEventListener(t,e=>{e.preventDefault();$('dropZone').classList.add('drag')}));['dragleave','drop'].forEach(t=>$('dropZone').addEventListener(t,e=>{e.preventDefault();$('dropZone').classList.remove('drag')}));$('dropZone').addEventListener('drop',e=>handleFile(e.dataTransfer.files[0]));$('qualityRange').oninput=e=>setText('qualityValue',e.target.value+'%');
+    $('compressBtn').onclick=()=>{if(!sourceFile)return;setText('compressStatus','Compressing…');$('compressStatus').className='muted';const img=new Image();img.onload=()=>{let w=img.naturalWidth,h=img.naturalHeight;const max=Math.max(100,Number($('maxWidth').value)||1920);if(w>max){h=Math.round(h*max/w);w=max}const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,w,h);const quality=Number($('qualityRange').value)/100;canvas.toBlob(blob=>{if(!blob){setText('compressStatus','Compression failed');$('compressStatus').className='error';return}compressedBlob=blob;$('compressDownload').disabled=false;setText('imageCompressed',`${formatBytes(blob.size)} · ${w}×${h}`);const previewUrl=URL.createObjectURL(blob);$('imagePreview').classList.remove('hidden');$('imagePreview').innerHTML=`<img src="${previewUrl}" alt="Compressed image preview" style="max-width:100%;max-height:420px;border-radius:10px">`;const change=Math.max(0,Math.round((1-blob.size/sourceFile.size)*100));setText('compressStatus',blob.size<sourceFile.size?`Reduced by ${change}%`:`Output is ${formatBytes(blob.size)}; original format may already be compressed`);$('compressStatus').className=blob.size<sourceFile.size?'success':'muted'},'image/jpeg',quality)},img.onerror=()=>{setText('compressStatus','Could not read image');$('compressStatus').className='error'};img.src=URL.createObjectURL(sourceFile)};
+    $('compressDownload').onclick=()=>{if(!compressedBlob)return;const a=document.createElement('a');a.href=URL.createObjectURL(compressedBlob);a.download=(sourceFile?.name||'image').replace(/\.[^.]+$/,'')+'-compressed.jpg';a.click()};
+
+    $('cleanRun').onclick=()=>{let s=$('cleanInput').value;s=s.replace(/\u00a0/g,' ').replace(/[ \t]+/g,' ').replace(/\s*\n\s*/g,'\n').trim();$('cleanOutput').value=s};
+    $('cleanTrim').onclick=()=>{$('cleanOutput').value=$('cleanInput').value.split('\n').map(x=>x.trim()).join('\n')};
+    $('cleanSpaces').onclick=()=>{$('cleanOutput').value=$('cleanInput').value.replace(/[ \t]+/g,' ')};
+    $('cleanEmpty').onclick=()=>{$('cleanOutput').value=$('cleanInput').value.split('\n').filter(x=>x.trim()!=='').join('\n')};
+    $('cleanCopy').onclick=async()=>copyText($('cleanOutput').value);
+  </script>
+</body>
+</html>
