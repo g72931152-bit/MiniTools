@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>CIPHER — Secure Capsule</title>
+  <meta name="description" content="Client-side encrypted capsules with live access control.">
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/">CIPHER</a>
+    <div class="top-status"><span class="dot"></span> CLIENT-SIDE ENCRYPTION</div>
+  </header>
+  <div class="layout">
+    <aside class="sidebar">
+      <button class="nav-btn active" data-section="encrypt">Encrypt</button>
+      <button class="nav-btn" data-section="capsules">Capsules</button>
+      <button class="nav-btn" data-section="requests">Requests</button>
+      <button class="nav-btn" data-section="activity">Activity</button>
+      <button class="nav-btn" data-section="keys">Keys</button>
+      <button class="nav-btn" data-section="settings">Settings</button>
+    </aside>
+    <main class="main">
+      <section class="panel active" id="panel-encrypt">
+        <div class="eyebrow">CIPHER ENGINE</div>
+        <h1>Create Secure Capsule</h1>
+        <p class="muted">Текст шифруется в браузере. Сервер хранит только криптографические данные и состояние доступа.</p>
+        <label>Protected message<textarea id="message" placeholder="Введите сообщение…"></textarea></label>
+        <div class="grid2">
+          <label>Mode<select id="mode"><option value="standard">Standard</option><option value="one-time">One-Time</option><option value="approval">Approval</option><option value="timed">Timed</option><option value="multi-approval">Multi-Approval</option><option value="dead-drop">Dead Drop</option></select></label>
+          <label>Expiration<select id="expiration"><option value="0">Never</option><option value="3600000">1 hour</option><option value="21600000">6 hours</option><option value="86400000">24 hours</option><option value="604800000">7 days</option></select></label>
+        </div>
+        <div class="stages" aria-label="Encryption stages">
+          <div class="stage" data-stage="1"><b>01</b><span>Preparing message</span><em class="stage-state">—</em></div>
+          <div class="stage" data-stage="2"><b>02</b><span>Generating random material</span><em class="stage-state">—</em></div>
+          <div class="stage" data-stage="3"><b>03</b><span>Deriving encryption keys</span><em class="stage-state">—</em></div>
+          <div class="stage" data-stage="4"><b>04</b><span>Encrypting payload</span><em class="stage-state">—</em></div>
+          <div class="stage" data-stage="5"><b>05</b><span>Protecting metadata</span><em class="stage-state">—</em></div>
+          <div class="stage" data-stage="6"><b>06</b><span>Creating key envelope</span><em class="stage-state">—</em></div>
+          <div class="stage" data-stage="7"><b>07</b><span>Verifying integrity</span><em class="stage-state">—</em></div>
+          <div class="stage" data-stage="8"><b>08</b><span>Building secure capsule</span><em class="stage-state">—</em></div>
+        </div>
+        <button class="primary" id="encrypt-btn">CREATE CAPSULE</button>
+        <div class="result" id="result" hidden>
+          <div class="result-head"><span>CAPSULE CREATED</span><strong id="created-id"></strong></div>
+          <div class="secret-grid">
+            <div><small>Link</small><code id="created-link"></code></div>
+            <div><small>Access Code</small><code id="created-access"></code></div>
+            <div class="wide"><small>Secret Key</small><code id="created-secret"></code></div><div class="wide"><small>Owner Key</small><code id="created-owner"></code></div>
+          </div>
+          <button class="secondary" id="handoff-btn">VIEW KEY HANDOFF INFO</button>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-capsules">
+        <div class="eyebrow">CAPSULES</div><h2>Open a capsule</h2>
+        <label>Capsule ID<input id="open-id" placeholder="84F291AA"></label>
+        <label>Access Code<input id="open-access" placeholder="7F-K9-X2-PQ"></label>
+        <label>Secret Key<input id="open-secret" placeholder="64 hex characters"></label>
+        <button class="primary" id="request-btn">REQUEST ACCESS</button>
+        <div class="result" id="open-status" hidden><div class="result-head"><span>LIVE SESSION</span><strong id="session-state">WAITING</strong></div><p>Session <code id="session-id"></code></p></div>
+        <div class="result" id="open-result" hidden><div class="result-head"><span>PLAINTEXT</span><strong>INTEGRITY VERIFIED</strong></div><pre id="plaintext"></pre></div>
+      </section>
+
+      <section class="panel" id="panel-requests">
+        <div class="eyebrow">OWNER CONTROL</div><h2>Access requests</h2>
+        <label>Owner Capsule ID<input id="owner-capsule" placeholder="84F291AA"></label>
+        <div id="sessions" class="sessions"></div>
+        <div class="actions"><button class="secondary" id="refresh-activity">REFRESH</button><button class="danger" id="revoke-btn">REVOKE ACCESS</button></div>
+      </section>
+
+      <section class="panel" id="panel-activity">
+        <div class="eyebrow">AUDIT</div><h2>Activity</h2>
+        <pre id="events" class="events">Choose a capsule in Requests to load activity.</pre>
+      </section>
+
+      <section class="panel" id="panel-keys"><div class="eyebrow">KEY MANAGEMENT</div><h2>Key model</h2><div class="diagram"><span>Random Root Secret</span><i>↓</i><span>HKDF separation</span><div class="branches"><b>Content Key</b><b>Metadata Key</b><b>Capsule Key</b><b>Audit Key</b></div></div><p class="muted">The browser owns the decryption secret. The server has no universal key and never receives plaintext.</p></section>
+      <section class="panel" id="panel-settings"><div class="eyebrow">SETTINGS</div><h2>Security posture</h2><div class="setting-row"><span>Server plaintext access</span><b>DISABLED</b></div><div class="setting-row"><span>AEAD</span><b>AES-256-GCM</b></div><div class="setting-row"><span>Key derivation</span><b>HKDF-SHA-256</b></div><div class="setting-row"><span>Local password KDF</span><b>PBKDF2-SHA-256</b></div></section>
+    </main>
+  </div>
+  <script type="module" src="/js/app.js"></script>
+</body>
+</html>
